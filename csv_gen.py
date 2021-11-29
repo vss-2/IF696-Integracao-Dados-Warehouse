@@ -52,7 +52,7 @@ def povoar_restaurante():
         return str(randint(10, 99))+str(randint(1000,99999))+str(randint(1000,9999))
 
     def sufixo_loja():
-        s = [' SA.', ' ME.', ' LTDA.', ' INC.', ]
+        s = [' SA.', ' ME.', ' MEI.', ' CO.', ' EIRELI.', ' EI.', ' LTDA.', ' INC.', ]
         return s[randint(0,len(s)-1)]
 
     def prefixo_end():
@@ -65,13 +65,13 @@ def povoar_restaurante():
             random_termo(str(names.get_last_name().upper()+sufixo_loja())), 
             random_termo(randint(0,100)/10), 
             random_termo(str(randint(10000,99999))+'-'+str(randint(100,999))), 
-            random_termo(randint(1,9999)),
             random_termo(str(prefixo_end()+names.get_last_name().capitalize())), 
+            random_termo(randint(1,9999)),
             random_termo(telefone())
         ])
 
     with open('./restaurantes.csv', 'w') as arqcsv:
-        # w.writerow('cnpj', 'nome_loja', 'cep', 'numero', 'endereco', 'telefone')
+        # w.writerow('cnpj', 'nome_loja', 'cep', 'endereco', 'numero', 'telefone')
         w = csv.writer(arqcsv, delimiter=',', quotechar='|')
         for l in linha:
             w.writerow(l)
@@ -80,13 +80,20 @@ def povoar_restaurante():
 
 def povoar_pratos():
 
+    def fix_nome(prato):
+        if('-' in prato):
+            prato = prato.replace('-', ' ')
+        if('_' in prato):
+            prato = prato.replace('_', ' ')
+        return prato.strip().capitalize()
+
     linha = []
-    for i in range(randint(7500, 15000)):
+    for i in range(7585):
         linha.append([
+            randint(0, 50), #categoria
             i, #prato_id
             randint(199, 50000)/100, #preco
-            randint(0, 50), #categoria
-            food_list[randint(0, len(food_list) -1)] # nome_prato
+            fix_nome(food_list[randint(0, len(food_list) -1)]) # nome_prato
         ])
 
     with open('./pratos.csv', 'w') as arqcsv:
@@ -95,7 +102,7 @@ def povoar_pratos():
         for l in linha:
             w.writerow(l)
 
-# povoar_pratos()
+povoar_pratos()
 
 def povoar_cupons():
     # data_inicial = datetime.fromtimestamp(1000000000.000000)
@@ -104,7 +111,7 @@ def povoar_cupons():
 
     linha = []
 
-    for i in range(randint(75000, 150000)):
+    for i in range(95154):
         ano_aleatorio = str(randint(1000,1600))
         dia_aleatorio = str(randint(100000,599999))
         data_inicial  = datetime.fromtimestamp(float(ano_aleatorio + dia_aleatorio + '.000000'))
@@ -163,12 +170,13 @@ def povoar_pessoas():
 
     for _ in range(100000):
         data_nascimento = datetime(1920, 1, 1) + (datetime.now() - datetime(1920, 1, 1)) * random.random()
+        full_name = names.get_full_name()
         linha.append([
-            random_termo(names.get_full_name()), #nome
             cpf(), 
+            random_termo(full_name), #nome
             random_termo(telefone()), #telefone
-            random_termo(names.get_first_name() + '.' + names.get_last_name() + sufixo_email()),
-            random_termo(str(randint(10000,99999))+'-'+str(randint(100,999))),  #cep
+            random_termo(full_name.split(' ')[0].lower() + '.' + full_name.split(' ')[1].lower() + sufixo_email()),
+            random_termo(str(randint(10000,99999))+'-'+str(randint(100,999))), #cep
             random_termo(str(prefixo_end()+names.get_last_name().capitalize())), #endereco
             random_termo(randint(1,9999)), #numero
             random_termo(data_nascimento), #data de nascimento
@@ -192,20 +200,7 @@ def povoar_pedido():
     linha = []
 
     def cpf(punctuation = True):
-        n = [random.randrange(10) for i in range(8)] + [0, 0, 0, 1]
-        v = [2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6]
-        # calcula dígito 1 e acrescenta ao total
-        s = sum(x * y for x, y in zip(reversed(n), v))
-        d1 = 11 - s % 11
-        if d1 >= 10:
-            d1 = 0
-        n.append(d1)
-        # idem para o dígito 2
-        s = sum(x * y for x, y in zip(reversed(n), v))
-        d2 = 11 - s % 11
-        if d2 >= 10:
-            d2 = 0
-        n.append(d2)
+        n = [random.randrange(10) for i in range(11)]
         if punctuation:
             return "%d%d%d.%d%d%d.%d%d%d-%d%d" % tuple(n[:11])
         else:
@@ -217,17 +212,17 @@ def povoar_pedido():
         ano_aleatorio = str(randint(10000,16000))
         dia_aleatorio = str(randint(10000,12000))
         data_inicial  = datetime.fromtimestamp(float(ano_aleatorio + dia_aleatorio + '.000000'))
-        data_final    = datetime.fromtimestamp(float(ano_aleatorio + str(randint(int(dia_aleatorio),599999)) + '.000000'))
+        data_final    = datetime.fromtimestamp(float(ano_aleatorio + str(randint(int(dia_aleatorio),59999)) + '.000000'))
         linha.append([
+            p, # id_pedido
+            randint(0,9999), # id_restaurante
+            random_termo(randint(0, 99999)), # id_cliente
+            random_termo(randint(0, 7784)), # id_prato
+            random_termo(randint(-1, 95153)), # id_cupom
             forma_pagamento(), # forma_pagamento
             data_inicial, # horario_inicio
             data_final, # horario_final
-            entregadores[randint(0, len(entregadores)-1)], # entregador
-            random_termo(randint(-1, 95153)), # id_cupom
-            randint(0,9999), # id_restaurante
-            random_termo(randint(0, 99999)), # id_cliente
-            p, # id_pedido
-            random_termo(randint(0, 7784)) # id_prato
+            entregadores[randint(0, len(entregadores)-1)] # entregador
         ])
 
     with open('./pedidos.csv', 'w') as arqcsv:
